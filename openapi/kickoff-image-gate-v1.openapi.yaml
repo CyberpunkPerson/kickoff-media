@@ -1,0 +1,330 @@
+openapi: 3.0.3
+
+info:
+  title: Kickoff Image API
+  description: API of public kickoff image service
+  contact:
+    name: Andrew Belunov
+  version: 1.0.0
+
+tags:
+  - name: image
+    description: Image processing
+
+paths:
+
+  /images/avatars:
+
+    parameters:
+      - $ref: '#/components/parameters/ApplicationName'
+      - $ref: '#/components/parameters/ApplicationVersion'
+      - $ref: '#/components/parameters/DeviceId'
+      - $ref: '#/components/parameters/Platform'
+      - $ref: '#/components/parameters/AcceptLanguage'
+
+    post:
+      tags:
+        - image
+      summary: uploadAvatar
+      description: Method for upload profile`s avatar
+      operationId: uploadAvatar
+      security:
+        - sessionId: [ ]
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: OK
+          headers:
+            trace-id:
+              $ref: '#/components/headers/TraceId'
+            server-time:
+              $ref: '#/components/headers/ServerTime'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Image'
+        400:
+          $ref: '#/components/responses/Error'
+        401:
+          $ref: '#/components/responses/Error'
+        422:
+          $ref: '#/components/responses/Error'
+        500:
+          $ref: '#/components/responses/Error'
+
+    delete:
+      tags:
+        - image
+      summary: deleteAvatar
+      description: Method for avatar deletion
+      operationId: deleteAvatar
+      security:
+        - sessionId: [ ]
+      responses:
+        200:
+          description: OK
+          headers:
+            traceId:
+              $ref: '#/components/headers/TraceId'
+            serverTime:
+              $ref: '#/components/headers/ServerTime'
+        400:
+          $ref: '#/components/responses/Error'
+        401:
+          $ref: '#/components/responses/Error'
+        403:
+          $ref: '#/components/responses/Error'
+        422:
+          $ref: '#/components/responses/Error'
+        500:
+          $ref: '#/components/responses/Error'
+
+  /images/drafts:
+
+    parameters:
+      - $ref: '#/components/parameters/ApplicationName'
+      - $ref: '#/components/parameters/ApplicationVersion'
+      - $ref: '#/components/parameters/DeviceId'
+      - $ref: '#/components/parameters/Platform'
+      - $ref: '#/components/parameters/AcceptLanguage'
+
+    post:
+      tags:
+        - image
+      summary: uploadImageDraft
+      description: Method for upload draft image
+      operationId: uploadImageDraft
+      security:
+        - sessionId: [ ]
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: OK
+          headers:
+            trace-id:
+              $ref: '#/components/headers/TraceId'
+            server-time:
+              $ref: '#/components/headers/ServerTime'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Image'
+        400:
+          $ref: '#/components/responses/Error'
+        401:
+          $ref: '#/components/responses/Error'
+        422:
+          $ref: '#/components/responses/Error'
+        500:
+          $ref: '#/components/responses/Error'
+
+components:
+
+  securitySchemes:
+
+    sessionId:
+      type: apiKey
+      in: header
+      name: session-id
+
+  headers:
+
+    TraceId:
+      description: Trace response identifier
+      schema:
+        type: string
+        minLength: 1
+      required: true
+
+    ServerTime:
+      description: Server response timestamp
+      schema:
+        type: string
+        format: date-time
+      required: true
+
+  parameters:
+
+    ApplicationName:
+      description: Invocation application name
+      name: app-name
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 1
+      example: web-client
+
+    ApplicationVersion:
+      description: Invocation application version
+      name: app-version
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 1
+      example: 5.1.3
+
+    Platform:
+      description: 'Platform: "ios", "android", other'
+      name: platform
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 1
+      example: android
+
+    DeviceId:
+      description: Device Id
+      name: device-id
+      in: header
+      required: false
+      schema:
+        type: string
+        minLength: 1
+
+    IdempotencyKey:
+      description: Idempotency Key
+      name: idempotency-key
+      in: header
+      required: true
+      schema:
+        type: string
+        format: uuid
+      example: d66e02f6-46a5-4a22-90bf-371c4cfba70b
+
+    AcceptLanguage:
+      in: header
+      name: accept-language
+      required: false
+      description: Clients priority language
+      schema:
+        type: string
+        example: en-US;
+
+  responses:
+
+    Error:
+      description: Error
+      headers:
+        trace-id:
+          $ref: '#/components/headers/TraceId'
+        server-time:
+          $ref: '#/components/headers/ServerTime'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+
+    Image:
+      type: object
+      required:
+        - id
+        - imageDetails
+      properties:
+        id:
+          $ref: '#/components/schemas/ImageId'
+        imageDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImageDetails'
+
+    ImageId:
+      description: image identifier
+      type: string
+      format: uuid
+      example: ad3488ee-02b4-4ab4-be72-897d01f4077f
+
+    ImageDetails:
+      type: object
+      required:
+        - url
+        - size
+        - width
+        - height
+      properties:
+        url:
+          $ref: '#/components/schemas/URL'
+        size:
+          $ref: '#/components/schemas/ImageSize'
+        width:
+          $ref: '#/components/schemas/Width'
+        height:
+          $ref: '#/components/schemas/Height'
+
+    URL:
+      description: Image url in s3 bucket
+      type: string
+      minLength: 1
+
+    ImageSize:
+      description: Image size
+      type: string
+      enum: [ tiny, small, big, original ]
+
+    Width:
+      description: Image width (pixels)
+      type: integer
+      minimum: 1
+
+    Height:
+      description: Image height (pixels)
+      type: integer
+      minimum: 1
+
+    ErrorResponse:
+      description: Error response
+      type: object
+      required:
+        - errorId
+        - errorCode
+        - errorMessage
+      properties:
+        errorId:
+          description: Error identificator
+          type: string
+          minLength: 16
+          maxLength: 16
+          example: 02d55cabb05b44f0
+        errorCode:
+          description: Service error code
+          type: string
+          minLength: 1
+          example: InternalServerError
+        errorMessage:
+          description: service error message
+          type: string
+          minLength: 1
+          example: Internal server error
+        errorDetails:
+          description: Error details
+          type: object
