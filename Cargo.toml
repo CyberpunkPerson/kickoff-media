@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+openapi = { path = "./generated/openapi" }
+
 axum = "0.8.4"
 tokio = { version = "1.47.0", features = ["full"] }
 tower = "0.5.2"
@@ -12,5 +14,7 @@ serde = "1.0.219"
 bytes = "1.10.1"
 http = "1.3.1"
 axum-extra = "0.10.1"
-
-openapi = { path = "./generated/openapi" }
+aws-config = "1.8.3"
+aws-sdk-s3 = "1.100.0"
+uuid = { version = "1.17.0", features = ["v4"] }
+config = "0.15.13"
