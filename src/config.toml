@@ -1,2 +1,11 @@
 [s3]
 host = "object.pscloud.io"
+
+[image]
+comression_quility = 90
+
+[image.attachment]
+base_bucket_name = "kickoff-image-attachment-qa"
+
+[image.avatar]
+base_bucket_name = "kickoff-image-avatar-qa"

@@ -1,7 +1,7 @@
 mod routes;
 mod server;
 mod operations;
-mod di;
+mod state;
 mod service;
 
 #[tokio::main]

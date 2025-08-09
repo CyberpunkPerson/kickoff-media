@@ -1,30 +1,56 @@
+use std::collections::HashMap;
+
+use crate::service::image::{attachment::AttachmentImageTypeConfig, avatar::AvatarImageTypeConfig};
 use bytes::Bytes;
+use config::Config;
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use uuid::Uuid;
 
-pub struct ImageService {
-    image_type_config: ImageTypeConfig
-    
-}
-pub struct ImageDetails {
+pub(crate) struct ImageDetails {
     file_name: String,
-    image_size: ImageSize,
+    image_size: ImageSizeType,
     content: Vec<u8>,
-    width: u32,
-    height: u32,
+    width: u8,
+    height: u8,
 }
-
-pub struct ImageBlank {
+struct ImageBlank {
     pub id: Uuid,
     pub owner_id: Uuid,
     pub content: Bytes,
 }
 
-pub struct ImageTypeConfig {}
+ #[derive(PartialEq, Eq, Hash)]
+pub(crate) enum ImageType {
+    Attachment,
+    Avatar,
+}
+
+enum ImageTypeConfigBundle{
+    Attachment(AttachmentImageTypeConfig),
+    Avatar(AvatarImageTypeConfig),
+}
+
+trait ImageTypeConfig: Sized + DeserializeOwned {
+    const PATH: &'static str;
+
+    fn original_size(&self) -> ImageSize;
+
+    fn sizes(&self) -> HashMap<ImageSizeType, ImageSize>;
+
+    fn build() -> Self {
+        Config::builder()
+            .add_source(config::File::with_name("config"))
+            .build()
+            .unwrap()
+            .get(Self::PATH)
+            .unwrap()
+    }
+}
 
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, serde::Serialize, serde::Deserialize,
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Hash,
 )]
-pub enum ImageSize {
+enum ImageSizeType {
     #[serde(rename = "original")]
     Original,
     #[serde(rename = "big")]
@@ -35,4 +61,12 @@ pub enum ImageSize {
     Tiny,
 }
 
-mod service;
+#[derive(Debug, Clone, Copy, Deserialize)]
+struct ImageSize {
+    height: u8,
+    width: u8,
+}
+
+mod attachment;
+mod avatar;
+pub mod service;

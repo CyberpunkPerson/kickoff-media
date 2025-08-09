@@ -2,10 +2,15 @@ use std::sync::Arc;
 use tokio::net::TcpListener;
 use tokio::signal;
 
-pub struct Server;
+use crate::state::{ApplicationState, build_state};
+
+pub struct Server {
+    state: ApplicationState,
+}
 
 pub async fn run() {
-    let app = openapi::server::new(Arc::new(Server));
+    let state = build_state().await;
+    let app = openapi::server::new(Arc::new(Server { state }));
 
     let listener = TcpListener::bind("3000").await.unwrap();
     axum::serve(listener, app)
